@@ -1,0 +1,77 @@
+﻿/*
+ * Copy a predefined set of attributes of the selected elements to the clipboard as a HTML table. This allows you to paste this table in applications such as Microsoft Word.
+ *  
+ * Copyright: Pieter De Rycke (2021)
+ */
+ 
+console.log("Copy Properties to Clipboard");
+
+var objectType = "application-component";
+
+var propertiesToExport = [
+    // Replace this with the list of Properties you which to export to the clipboard
+    "Operating System",
+    "Technology",
+];
+
+var archimateObjects = null;
+if($(selection).first().type === "archimate-diagram-model") {
+    archimateObjects = $(selection.first()).find(objectType);
+}
+else {
+    archimateObjects = $(selection).filter(objectType);
+}
+
+console.log(String(archimateObjects))
+
+header = ["#", "Name"]
+propertiesToExport.forEach(function(propertyToExport) { header.push(propertyToExport)});
+
+rows = [];
+for(i = 0; i < archimateObjects.length; i++) {
+    var archimateObject = archimateObjects[i];
+
+    var row = [(i+1), archimateObject.name];
+
+    propertiesToExport.forEach(function(propertyToExport) { 
+        if(archimateObject.prop(propertyToExport) != null)
+            row.push(archimateObject.prop(propertyToExport));
+        else
+            row.push("");
+    });
+
+    rows.push(row);
+}
+copyToClipboard(header, rows);
+
+
+function copyToClipboard(header, rows) {
+    var Clipboard = Java.type("org.eclipse.swt.dnd.Clipboard");
+    var TextTransfer = Java.type("org.eclipse.swt.dnd.TextTransfer");
+    var HTMLTransfer= Java.type("org.eclipse.swt.dnd.HTMLTransfer");
+
+    var textData = "Hello World";
+
+    var htmlData = "<html><head><style>table, th, td {border: 1px solid black; border-collapse: collapse;}</style></head><body><table><tr>";
+    header.forEach(function(column) { htmlData += "<th>" + column + "</th>"});
+
+    htmlData += "</tr>";
+
+    rows.forEach(function(row) {
+        htmlData += "<tr>";
+        row.forEach(function(column) { htmlData += "<td>" + column + "</td>" });
+        htmlData += "</tr>";
+    });
+
+    htmlData += "</table></body></html>";
+
+    var textTransfer = TextTransfer.getInstance();
+    var htmlTransfer = HTMLTransfer.getInstance();
+
+    transfers = [textTransfer, htmlTransfer];
+    data = [htmlData, htmlData];
+
+    var clipboard = new Clipboard(shell.getDisplay());
+    clipboard.setContents(data, transfers);
+    clipboard.dispose();
+}
