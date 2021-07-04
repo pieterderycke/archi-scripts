@@ -13,13 +13,11 @@ var UNIQUE_KEY = "Name"
 
 console.show();
 console.clear();
-console.log("> Import CSV");
+console.log("Import CSV");
 
 load(__DIR__ + "lib/papaparse.min.js");
 
-console.log("> Loaded Papa Parse");
-
-var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.CSV"], fileName: "data.csv" });
+var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.csv"], fileName: "data.csv" });
 if (filePath) {
     var data = readCsvFile(filePath);
 
@@ -34,7 +32,7 @@ if (filePath) {
             row[theDataHeaders[j]]=data[i][j];
         }
 
-        DEBUG ? console.log("Looking up " + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]") : true;
+        DEBUG ? console.log("Looking up " + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "].") : true;
 
         archimateConcept = $(row.Type).filter(function(object) { 
             switch(UNIQUE_KEY) {
@@ -84,10 +82,10 @@ if (filePath) {
         }
 
     }
-    console.log("> Parsing Complete")
+    console.log("Parsing Complete.")
 }
 else {
-    console.log("> Cancelled");
+    console.log("Cancelled.");
 }
 
 function readCsvFile(filePath) {
@@ -97,7 +95,6 @@ function readCsvFile(filePath) {
     var theCSV ="";
 
     var data = theCSVFile.read();
-    console.log("> Please Wait...");
     while(data != -1) {
         var theCharacter = String.fromCharCode(data);
         theCSV+=theCharacter;
@@ -105,7 +102,7 @@ function readCsvFile(filePath) {
     }
     theCSVFile.close();
 
-    console.log("> File Loaded");
+    console.log("File \"" + filePath + "\" Loaded.");
     theDataFile = Papa.parse(theCSV);
 
     return theDataFile.data;
