@@ -8,7 +8,8 @@
  * (C) Pieter De Rycke 2021
  */
 
-var debug = true;
+var DEBUG = true;
+var UNIQUE_KEY = "Name"
 
 console.show();
 console.clear();
@@ -18,8 +19,78 @@ load(__DIR__ + "lib/papaparse.min.js");
 
 console.log("> Loaded Papa Parse");
 
-var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.CSV"], fileName: "default.archimate" });
+var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.CSV"], fileName: "data.csv" });
 if (filePath) {
+    var data = readCsvFile(filePath);
+
+    theDataHeaders = data[0];
+
+    var commonProperties = ["Name", "Documentation", "Type"];
+
+    for (var i=1; i < data.length-1; i++) {
+        var archimateConcept = null;
+        var row = [];
+        for (var j=0; j<theDataHeaders.length; j++) {
+            row[theDataHeaders[j]]=data[i][j];
+        }
+
+        DEBUG ? console.log("Looking up " + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]") : true;
+
+        archimateConcept = $(row.Type).filter(function(object) { 
+            switch(UNIQUE_KEY) {
+                case "Name": 
+                    return object.name == row[UNIQUE_KEY];
+                default:
+                    return object.prop(UNIQUE_KEY) == row[UNIQUE_KEY];
+            }
+        });
+
+        if (!archimateConcept || archimateConcept.length != 1) {
+            DEBUG ? console.log("Unique Archimate element \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]" +"\" not found; creating a new one.") : true;
+
+            archimateConcept = model.createElement(row.Type, row.Name, getFolder(row.Type, row.Folder));
+        }
+        else {
+            DEBUG ? console.log("Existing unique Archimate element \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]" +"\" found.") : true;
+
+            archimateConcept = archimateConcept[0];
+
+            if(row.Folder) {
+                getFolder(row.Type, row.Folder).add(archimateConcept);
+            }
+        }
+
+        DEBUG ? console.log(archimateConcept) : true;
+
+        archimateConcept.name = row.Name;
+        archimateConcept.documentation = row.Documentation;
+        archimateConcept.type = row.Type;
+
+        for (var j=0; j<theDataHeaders.length; j++) {
+            switch (theDataHeaders[j]) {
+                case "Name":
+                case "Documentation":
+                case "Type":
+                case "Folder":
+                    break;
+                default:
+                    if (row[theDataHeaders[j]]) {
+                        archimateConcept.prop(theDataHeaders[j],row[theDataHeaders[j]]);
+                    }
+                    else {
+                        archimateConcept.removeProp(theDataHeaders[j]);
+                    }
+            }
+        }
+
+    }
+    console.log("> Parsing Complete")
+}
+else {
+    console.log("> Cancelled");
+}
+
+function readCsvFile(filePath) {
     var FileReader = Java.type("java.io.FileReader");
     var theCSVFile = new FileReader(filePath);
 
@@ -37,54 +108,24 @@ if (filePath) {
     console.log("> File Loaded");
     theDataFile = Papa.parse(theCSV);
 
-    theData = theDataFile.data;
-
-    theDataHeaders = theData[0];
-
-    var commonProperties = ["UID","Name", "Documentation","Type"];
-
-    for (var i=1; i<theData.length-1; i++) {
-        var theConcept = null;
-        var theObject = [];
-        for (var j=0; j<theDataHeaders.length; j++) {
-            theObject[theDataHeaders[j]]=theData[i][j];
-        }
-
-        theConcept = $("#"+theObject.UID).first();
-        if (!theConcept) {
-            debug? console.log("> Missing UID, checking Name"):true;
-            theConcept = $("."+theObject.Name).filter(theObject.Type).first();
-            if (!theConcept || theConcept.length>1) {
-                debug? console.log("> Creating Concept"):true;
-                theConcept = model.createElement(theObject.Type,theObject.Name);
-            }
-        }
-        debug? console.log(theConcept):true;
-
-        theConcept.name=theObject.Name;
-        theConcept.documentation=theObject.Documentation;
-        theConcept.type=theObject.Type;
-
-        for (var j=0; j<theDataHeaders.length; j++) {
-            switch (theDataHeaders[j]) {
-                case "UID":
-                case "Name":
-                case "Documentation":
-                case "Type":
-                    break;
-                default:
-                    if (theObject[theDataHeaders[j]]) {
-                        theConcept.prop(theDataHeaders[j],theObject[theDataHeaders[j]]);
-                    }
-                    else {
-                        theConcept.removeProp(theDataHeaders[j]);
-                    }
-            }
-        }
-
-    }
-    console.log("> Parsing Complete")
+    return theDataFile.data;
 }
-else {
-    console.log("> Cancelled");
+
+function getFolder(archimateType, folderName) {
+    if(folderName) {
+        var layer = archimateType.split("-")[0];
+        layer = layer[0].toUpperCase() + layer.substring(1);
+        var rootFolder = $("folder." + layer).first();
+
+        folder = $(rootFolder).find("folder." + folderName).first();
+        if(!folder) {
+            folder = rootFolder.createFolder(folderName);
+        }
+
+        console.log(folder);
+
+        return folder;
+    }
+    else
+        return null;
 }
