@@ -9,7 +9,7 @@
  */
 
 var DEBUG = true;
-var UNIQUE_KEY = "Name"
+var UNIQUE_KEY = "Name";
 
 console.show();
 console.clear();
@@ -17,7 +17,7 @@ console.log("Import CSV");
 
 load(__DIR__ + "lib/papaparse.min.js");
 
-var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.csv"], fileName: "data.csv" });
+var filePath = window.promptOpenFile({ title: "Open CSV", filterExtensions: ["*.csv"], fileName: "elements.csv" });
 if (filePath) {
     var data = readCsvFile(filePath);
 
@@ -26,15 +26,15 @@ if (filePath) {
     var commonProperties = ["Name", "Documentation", "Type"];
 
     for (var i=1; i < data.length-1; i++) {
-        var archimateConcept = null;
+        var archimateElement = null;
         var row = [];
         for (var j=0; j<theDataHeaders.length; j++) {
-            row[theDataHeaders[j]]=data[i][j];
+            row[theDataHeaders[j]] = data[i][j];
         }
 
         DEBUG ? console.log("Looking up " + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "].") : true;
 
-        archimateConcept = $(row.Type).filter(function(object) { 
+        archimateElement = $(row.Type).filter(function(object) { 
             switch(UNIQUE_KEY) {
                 case "Name": 
                     return object.name == row[UNIQUE_KEY];
@@ -43,26 +43,26 @@ if (filePath) {
             }
         });
 
-        if (!archimateConcept || archimateConcept.length != 1) {
+        if (!archimateElement || archimateElement.length != 1) {
             DEBUG ? console.log("Unique Archimate element \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]" +"\" not found; creating a new one.") : true;
 
-            archimateConcept = model.createElement(row.Type, row.Name, getFolder(row.Type, row.Folder));
+            archimateElement = model.createElement(row.Type, row.Name, getFolder(row.Type, row.Folder));
         }
         else {
             DEBUG ? console.log("Existing unique Archimate element \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + "]" +"\" found.") : true;
 
-            archimateConcept = archimateConcept[0];
+            archimateElement = archimateElement[0];
 
             if(row.Folder) {
-                getFolder(row.Type, row.Folder).add(archimateConcept);
+                getFolder(row.Type, row.Folder).add(archimateElement);
             }
         }
 
-        DEBUG ? console.log(archimateConcept) : true;
+        DEBUG ? console.log(archimateElement) : true;
 
-        archimateConcept.name = row.Name;
-        archimateConcept.documentation = row.Documentation;
-        archimateConcept.type = row.Type;
+        archimateElement.name = row.Name;
+        archimateElement.documentation = row.Documentation;
+        archimateElement.type = row.Type;
 
         for (var j=0; j<theDataHeaders.length; j++) {
             switch (theDataHeaders[j]) {
@@ -73,10 +73,10 @@ if (filePath) {
                     break;
                 default:
                     if (row[theDataHeaders[j]]) {
-                        archimateConcept.prop(theDataHeaders[j],row[theDataHeaders[j]]);
+                        archimateElement.prop(theDataHeaders[j],row[theDataHeaders[j]]);
                     }
                     else {
-                        archimateConcept.removeProp(theDataHeaders[j]);
+                        archimateElement.removeProp(theDataHeaders[j]);
                     }
             }
         }
@@ -110,8 +110,16 @@ function readCsvFile(filePath) {
 
 function getFolder(archimateType, folderName) {
     if(folderName) {
-        var layer = archimateType.split("-")[0];
-        layer = layer[0].toUpperCase() + layer.substring(1);
+        var layer;
+
+        switch(archimateType) {
+            case "data-object":
+                layer = "Application";
+            default:
+                layer = archimateType.split("-")[0];
+                layer = layer[0].toUpperCase() + layer.substring(1);
+        }
+
         var rootFolder = $("folder." + layer).first();
 
         folder = $(rootFolder).find("folder." + folderName).first();
