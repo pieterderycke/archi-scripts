@@ -1,0 +1,153 @@
+/*
+ * Set the visual appereance correctly
+ *  
+ * Copyright: Pieter De Rycke (2021)
+ */
+
+console.log("Set Visual Appereance");
+
+var NOTE_NAME = "NoteAddedThroughScript";
+
+var flowRelationships = null;
+var notesToDelete = null;
+var legendGroup = null;
+
+if($(selection).first().type === "archimate-diagram-model") {
+    flowRelationships = $(selection.first()).find("triggering-relationship");
+
+    notesToDelete = $(selection).find("diagram-model-note").filter("." + NOTE_NAME);
+    legendGroup = $(selection).find("group").filter(".Legend");
+}
+else {
+    flowRelationships = $(selection).filter("flow-relationship");
+
+    notesToDelete = $(selection).children("diagram-model-note").filter("." + NOTE_NAME);
+    legendGroup = $(selection).children("group").filter(".Legend");
+}
+
+legendGroup.delete();
+notesToDelete.each(function(noteToDelete) {
+    noteToDelete.delete();
+});
+
+var elements = getSelectedConcepts(["application-component", "data-object"]);
+elements.forEach(function(element) {
+    var status = element.prop("Status");
+
+    attachNote(element, status);
+});
+
+var relationships = getSelectedConcepts(["triggering-relationship", "access-relationship"]);
+relationships.forEach(function(relationship) {
+    relationship.setLabelExpression("${property:Protocol}");
+});
+
+
+function getSelectedConcepts(conceptTypesToSelect) {
+    var result = [];
+
+    if($(selection).first().type === "archimate-diagram-model") {
+        conceptTypesToSelect.forEach(function(conceptType) {
+            var concepts = $(selection.first()).find(conceptType);
+    
+            result = result.concat(concepts);
+        });
+    }
+    else {
+        conceptTypesToSelect.forEach(function(conceptType) {
+            var concepts = $(selection).filter(conceptType);
+    
+            result = result.concat(concepts);
+        });
+    }
+    
+    return result;
+}
+
+function attachNote(visualObject, status) {
+
+    if(isValidStatus(status) && status !== "Existing"){
+        var note = visualObject.createObject("note", 1, 1, 25, 25);
+        note.name = NOTE_NAME;
+        note.setText(statusToCharacter(status));
+        note.fillColor = statusToColor(status);
+    }
+}
+
+attachLegend();
+
+function attachLegend() {
+    var labels = ["New", "Modified", "To Decommission"]
+
+    var view = selection.filter("archimate-diagram-model").first();
+
+    legend = view.createObject("group", 1, 1, 200, 150);
+    legend.name = "Legend";
+    legend.fillColor = "#FFFFFF";
+
+    createdBy = legend.createObject("note", 5, 25, 195, 25);
+    createdBy.setText("Created By Pieter De Rycke ()");
+    createdBy.borderType = BORDER.NONE;
+    createdBy.name = NOTE_NAME;
+
+    for(var i = 0; i < labels.length; i++) {
+        var status = labels[i];
+
+        icon = legend.createObject("note", 5, 55 + i * 30, 25, 25);
+        icon.fillColor = statusToColor(status);
+        icon.name = NOTE_NAME;
+
+        text = legend.createObject("note", 35, 55 + i * 30, -1, 25);
+        text.setText(status);
+        text.borderType = BORDER.NONE;
+        text.name = NOTE_NAME;
+    }
+}
+
+function isValidStatus(status) {
+    if(status === "Existing") {
+        return true;
+    }
+    if(status === "New") {
+        return true;
+    }
+    else if(status === "Modified") {
+        return true;
+    }
+    else if(status === "To Decommission") {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function statusToColor(status) {
+    if(status === "New") {
+        return "#008000"; // Green
+    }
+    else if(status === "Modified") {
+        return "#FF8C00"; // Orange
+    }
+    else if(status === "To Decommission") {
+        return "#FF0000"; // Red
+    }
+    else {
+        return null;
+    }
+}
+
+function statusToCharacter(status) {
+    if(status === "New") {
+        return "N";
+    }
+    else if(status === "Modified") {
+        return "M";
+    }
+    else if(status === "To Decommission") {
+        return "D";
+    }
+    else {
+        return null;
+    }
+}
