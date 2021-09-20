@@ -8,6 +8,8 @@ console.log("Set Visual Appereance");
 
 var NOTE_NAME = "NoteAddedThroughScript";
 
+var ATTACH_LEGEND = false;
+
 var flowRelationships = null;
 var notesToDelete = null;
 var legendGroup = null;
@@ -30,20 +32,24 @@ notesToDelete.each(function(noteToDelete) {
     noteToDelete.delete();
 });
 
-var elements = getSelectedConcepts(["application-component", "data-object"]);
+var elements = getSelectedElements(["application-component", "data-object"]);
 elements.forEach(function(element) {
     var status = element.prop("Status");
 
     attachNote(element, status);
 });
 
-var relationships = getSelectedConcepts(["triggering-relationship", "access-relationship"]);
+var relationships = getSelectedElements(["triggering-relationship", "access-relationship"]);
 relationships.forEach(function(relationship) {
     relationship.setLabelExpression("${property:Protocol}");
 });
 
+if(ATTACH_LEGEND) {
+    attachLegend();
+}
 
-function getSelectedConcepts(conceptTypesToSelect) {
+
+function getSelectedElements(conceptTypesToSelect) {
     var result = [];
 
     if($(selection).first().type === "archimate-diagram-model") {
@@ -73,8 +79,6 @@ function attachNote(visualObject, status) {
         note.fillColor = statusToColor(status);
     }
 }
-
-attachLegend();
 
 function attachLegend() {
     var labels = ["New", "Modified", "To Decommission"]

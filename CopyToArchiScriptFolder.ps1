@@ -1,0 +1,1 @@
+Copy-Item "SetVisualAppereance.ajs" -Destination "$env:APPDATA\Archi4\scripts"
