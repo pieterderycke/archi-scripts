@@ -1,7 +1,7 @@
 # archi-scripts
 This respository contains a collection of [jarchi](https://github.com/archimatetool/archi-scripting-plugin/wiki) utility scripts that should accelerate working with [Archi](https://www.archimatetool.com/) on more complex Archimate models.
 
-## CopyPropertoesToClipboard
+## CopyPropertiesToClipboard
 Copy a predefined set of properties of the selected elements to the clipboard as a HTML table. This allows you to paste this table in applications such as Microsoft Word.
 Please change the values of the variables "objectType" and "propertiesToExport" to match your own needs
 
