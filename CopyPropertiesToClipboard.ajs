@@ -8,6 +8,10 @@ console.log("Copy Properties to Clipboard");
 
 load(__DIR__ + "util/visualUtils.ajs");
 
+var objectTypes = [
+    "application-component", // Change this to the Archimate element types that you whish to export
+];
+
 var propertiesToExport = [
     // Replace this with the list of Properties you which to export to the clipboard
     "Operating System",
@@ -17,7 +21,7 @@ var propertiesToExport = [
 header = ["#", "Name"]
 propertiesToExport.forEach(function(propertyToExport) { header.push(propertyToExport)});
 
-var archimateObjects = getSelectedElements(["application-component"]);
+var archimateObjects = getSelectedElements(objectTypes);
 rows = [];
 for(i = 0; i < archimateObjects.length; i++) {
     var archimateObject = archimateObjects[i];
