@@ -6,26 +6,26 @@
 
 console.log("Set Visual Appereance");
 
+load(__DIR__ + "util/systemUtil.ajs");
+load(__DIR__ + "util/visualUtils.ajs");
+
 var NOTE_NAME = "NoteAddedThroughScript";
 
-var ATTACH_LEGEND = false;
+var ATTACH_LEGEND = true;
 
-var flowRelationships = null;
 var notesToDelete = null;
 var legendGroup = null;
 
 if($(selection).first().type === "archimate-diagram-model") {
-    flowRelationships = $(selection.first()).find("triggering-relationship");
-
     notesToDelete = $(selection).find("diagram-model-note").filter("." + NOTE_NAME);
-    legendGroup = $(selection).find("group").filter(".Legend");
+    legendGroup = $(selection).find("diagram-model-group").filter(".Legend");
 }
 else {
-    flowRelationships = $(selection).filter("flow-relationship");
-
     notesToDelete = $(selection).children("diagram-model-note").filter("." + NOTE_NAME);
-    legendGroup = $(selection).children("group").filter(".Legend");
+    legendGroup = $(selection).children("diagram-model-group").filter(".Legend");
 }
+
+console.log(String(legendGroup));
 
 legendGroup.delete();
 notesToDelete.each(function(noteToDelete) {
@@ -48,28 +48,6 @@ if(ATTACH_LEGEND) {
     attachLegend();
 }
 
-
-function getSelectedElements(conceptTypesToSelect) {
-    var result = [];
-
-    if($(selection).first().type === "archimate-diagram-model") {
-        conceptTypesToSelect.forEach(function(conceptType) {
-            var concepts = $(selection.first()).find(conceptType);
-    
-            result = result.concat(concepts);
-        });
-    }
-    else {
-        conceptTypesToSelect.forEach(function(conceptType) {
-            var concepts = $(selection).filter(conceptType);
-    
-            result = result.concat(concepts);
-        });
-    }
-    
-    return result;
-}
-
 function attachNote(visualObject, status) {
 
     if(isValidStatus(status) && status !== "Existing"){
@@ -82,22 +60,25 @@ function attachNote(visualObject, status) {
 
 function attachLegend() {
     var labels = ["New", "Modified", "To Decommission"]
+    var letters = ["N", "M", "D"]
 
     var view = selection.filter("archimate-diagram-model").first();
 
-    legend = view.createObject("group", 1, 1, 200, 150);
+    legend = view.createObject("diagram-model-group", 1, 1, 200, 150);
     legend.name = "Legend";
     legend.fillColor = "#FFFFFF";
 
     createdBy = legend.createObject("note", 5, 25, 195, 25);
-    createdBy.setText("Created By Pieter De Rycke ()");
+    createdBy.setText("Created By Pieter De Rycke (" + getUserName() + ").");
     createdBy.borderType = BORDER.NONE;
     createdBy.name = NOTE_NAME;
 
     for(var i = 0; i < labels.length; i++) {
         var status = labels[i];
+        var letter = letters[i];
 
         icon = legend.createObject("note", 5, 55 + i * 30, 25, 25);
+        icon.setText(letter);
         icon.fillColor = statusToColor(status);
         icon.name = NOTE_NAME;
 
