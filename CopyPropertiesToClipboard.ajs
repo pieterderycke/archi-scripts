@@ -6,7 +6,7 @@
  
 console.log("Copy Properties to Clipboard");
 
-var objectType = "application-component";
+load(__DIR__ + "util/visualUtils.ajs");
 
 var propertiesToExport = [
     // Replace this with the list of Properties you which to export to the clipboard
@@ -14,19 +14,10 @@ var propertiesToExport = [
     "Technology",
 ];
 
-var archimateObjects = null;
-if($(selection).first().type === "archimate-diagram-model") {
-    archimateObjects = $(selection.first()).find(objectType);
-}
-else {
-    archimateObjects = $(selection).filter(objectType);
-}
-
-console.log(String(archimateObjects))
-
 header = ["#", "Name"]
 propertiesToExport.forEach(function(propertyToExport) { header.push(propertyToExport)});
 
+var archimateObjects = getSelectedElements(["application-component"]);
 rows = [];
 for(i = 0; i < archimateObjects.length; i++) {
     var archimateObject = archimateObjects[i];
