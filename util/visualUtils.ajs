@@ -1,0 +1,20 @@
+function getSelectedElements(conceptTypesToSelect) {
+    var result = [];
+
+    if($(selection).first().type === "archimate-diagram-model") {
+        conceptTypesToSelect.forEach(function(conceptType) {
+            var concepts = $(selection.first()).find(conceptType);
+    
+            result = result.concat(concepts);
+        });
+    }
+    else {
+        conceptTypesToSelect.forEach(function(conceptType) {
+            var concepts = $(selection).filter(conceptType);
+    
+            result = result.concat(concepts);
+        });
+    }
+    
+    return result;
+}
