@@ -38,23 +38,32 @@ if (filePath) {
             DEBUG && UNIQUE_KEY ? console.log("Unique Archimate Relationship \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + ", source:" + row.Source + ", target:" + row.Target + "]" +"\" not found; creating a new one..") : true;
             DEBUG && !UNIQUE_KEY ? console.log("Unique Archimate Relationship \"" + row.Type + "[source:" + row.Source + ", target:" + row.Target + "]" +"\" not found; creating a new one..") : true;
 
-            if($("." + row.Source).size() == 0)
+            if($("." + row.Source).size() == 0) {
                 console.error("No element with the name \"" + row.Source + "\" found.");
+				continue;
+			}
             
-            if($("." + row.Source).size() > 1)
+            if($("." + row.Source).size() > 1) {
                 console.error("More than element with the name \"" + row.Source + "\" found.");
+				continue;
+			}
 
-            if($("." + row.Target).size() == 0)
+            if($("." + row.Target).size() == 0) {
                 console.error("No element with the name \"" + row.Target + "\" found.")
+				continue;
+			}
 
-            if($("." + row.Target).size() > 1)
+            if($("." + row.Target).size() > 1) {
                 console.error("More than element with the name \"" + row.Target + "\" found.");
+				continue;
+			}
 
-            source = $("." + row.Source).first();
-            target = $("." + row.Target).first();
+			var name = (row.Name === undefined || row.Name === null) ? "" : row.Name;
+            var source = $("." + row.Source).first();
+            var target = $("." + row.Target).first();
 
             DEBUG ? console.log("Creating Concept"):true;
-            archimateRelationship = model.createRelationship(row.Type, row.Name, source, target);
+            archimateRelationship = model.createRelationship(row.Type, name, source, target);
         }
         else {
             DEBUG && UNIQUE_KEY ? console.log("Existing unique Archimate relationship \"" + row.Type + "[" + UNIQUE_KEY + ":" + row[UNIQUE_KEY] + ", source:" + row.Source + ", target:" + row.Target + "]" +"\" found.") : true;
