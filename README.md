@@ -22,3 +22,6 @@ This script is based on the LoadCsv script of Steven Mileham. It requires [PapaP
 ## LoadRelationshipsFromCsv
 Load relationships between Archimate elements from a csv file. 
 This script is based on the LoadCsv script of Steven Mileham. It requires [PapaParse](https://www.papaparse.com/) to be available.
+
+## SetVisualAppereance
+Set the visual appereance of Archimate elements correctly.

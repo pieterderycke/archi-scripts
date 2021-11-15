@@ -1,0 +1,96 @@
+/*
+ * Export To CSV
+ * 
+ * Requires jArchi - https://www.archimatetool.com/blog/2018/07/02/jarchi/
+ * Requires PapaParse - https://www.papaparse.com/
+ * Works with Import from CSV script - https://gist.github.com/smileham/1e57a5946235e780dee5a824f664aa3d
+ * 
+ * Based on the Export to CSV script of Steven Mileham (but further enhanced)
+ * (C) Pieter De Rycke 2021
+ *
+ */
+
+var debug = false;
+
+// Show output in the console
+console.show();
+console.clear();
+console.log("> Starting CSV Export");
+
+load(__DIR__ + "lib/papaparse.min.js");
+load(__DIR__ + "util/visualUtils.ajs");
+
+var knownProperties = [];
+
+// Set up some conceptHeaders
+var headers = [
+    "Name",
+    "Type",
+    "Specialization",
+    "Documentation",
+];
+
+var current_row = 1;
+
+var theData = new Array();
+
+var elements = getSelectedElements();
+elements.each(function(element) {
+    var elementProperties = element.prop();  
+
+    for (var i = 0; i < elementProperties.length; i++){
+        var found = false;
+        for (var j = 0; j < knownProperties.length; j++) {
+            if (knownProperties[j] == elementProperties[i]) {
+                found = true;
+            }
+        }
+        if (!found) {
+            knownProperties.push(elementProperties[i]);
+            headers.push(elementProperties[i]);
+        }
+    }
+
+    var row = new Object;
+    row["Name"] = element.name;
+    row["Type"] = element.type;
+    row["Specialization"] = element.specialization;
+    row["Documentation"] = element.documentation;
+
+    for (var i = 0; i < knownProperties.length; i++){
+        if (element.prop(knownProperties[i])) {
+            row[knownProperties[i]] = "" + element.prop(knownProperties[i]);
+        }
+    }
+    debug? console.log("> theObject"):true;
+    debug? console.log(row):true;
+
+    theData.push(row);
+});
+
+// Open a dialog to let the user choose where to save the generated file
+// var defaultFileName = model.name ? model.name + "-" + theView.name + ".csv" : "Exported Model.csv"; // Default file name
+var defaultFileName = "data.csv"; // Default file name
+var exportFile = window.promptSaveFile({ title: "Export to CSV", filterExtensions: [ "*.csv" ], fileName: defaultFileName } );
+
+debug? console.log("> conceptHeaders"+headers):true;
+
+debug? console.log("> TheData"+theData.length):true;
+debug? console.log(theData):true;
+
+// debug? console.log(theRelationshipData):true;
+
+var theCSV = Papa.unparse({fields:headers, data:theData});
+// var theRelationshipsCSV = Papa.unparse({fields:relationshipHeaders, data:theRelationshipData});
+
+if(exportFile != null) {
+    debug? console.log("> TheCSV"):true;
+    debug? console.log(theCSV):true;
+
+    $.fs.writeFile(exportFile, theCSV);
+    // $.fs.writeFile(exportFile.substring(0,exportFile.length-4) +"-relationship.csv", theRelationshipsCSV);
+    console.log("> Export done");
+}
+else {
+    console.log("> Export cancelled");
+}

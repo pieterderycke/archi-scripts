@@ -61,14 +61,16 @@ if (filePath) {
         DEBUG ? console.log(archimateElement) : true;
 
         archimateElement.name = row.Name;
-        archimateElement.documentation = row.Documentation;
         archimateElement.type = row.Type;
+        archimateElement.specialization = row.Specialization;
+        archimateElement.documentation = row.Documentation;
 
         for (var j=0; j<theDataHeaders.length; j++) {
             switch (theDataHeaders[j]) {
                 case "Name":
                 case "Documentation":
                 case "Type":
+                case "Specialization":
                 case "Folder":
                     break;
                 default:
