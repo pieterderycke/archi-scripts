@@ -41,6 +41,11 @@ elements.forEach(function(element) {
 
 var relationships = getSelectedElements(["triggering-relationship", "access-relationship"]);
 relationships.forEach(function(relationship) {
+    var status = element.prop("Status");
+    color = statusToColor(status);
+
+    relationship.fontColor = color;
+    relationship.lineColor = color;
     relationship.setLabelExpression("${property:Protocol}");
 });
 
